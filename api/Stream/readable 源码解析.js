@@ -293,6 +293,8 @@ function howMuchToRead(n, state) {
 }
 
 // you can override either this method, or the async _read(n) below.
+// read(n) 返回读到的数据，同时通过触发data事件，向外传递数据的。
+// read(n) 的返回值为null，表示没有读到数据。
 Readable.prototype.read = function (n) {
   debug('read', n);
   n = parseInt(n, 10);
@@ -304,6 +306,9 @@ Readable.prototype.read = function (n) {
   // if we're doing read(0) to trigger a readable event, but we
   // already have a bunch of data in the buffer, then just trigger
   // the 'readable' event and move on.
+  /*
+  如果我们调用read(0)来触发一个可读的事件，但我们已经有一堆数据在缓冲区，然后只触发'可读'事件。
+  */
   if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
     debug('read: emitReadable', state.length, state.ended);
     if (state.length === 0 && state.ended) endReadable(this);else emitReadable(this);
@@ -313,6 +318,7 @@ Readable.prototype.read = function (n) {
   n = howMuchToRead(n, state);
 
   // if we've ended, and we're now clear, then finish it up.
+  // state.ended＝＝true 表示数据已经从源读取完啦
   if (n === 0 && state.ended) {
     if (state.length === 0) endReadable(this);
     return null;

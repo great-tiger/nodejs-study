@@ -26,7 +26,7 @@ m.on('end', function() {
 
 var s = m.read();
 while (s !== null) {
-	console.log('read data from myReadableStream');
+	console.log('read data from myReadableStream',s);
     s=m.read();
 }
 /*
