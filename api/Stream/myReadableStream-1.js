@@ -29,7 +29,12 @@ while (s !== null) {
 	console.log('read data from myReadableStream');
     s=m.read();
 }
-
+/*
+执行 read() 时，如果缓存中数据不够，会调用 _read() 去底层取
+_read 方法中可以同步或异步地调用 push(data) 来将底层数据交给流处理
+在上面的例子中，由于是同步调用 push 方法，数据会添加到缓存中。
+read 方法在执行完 _read 方法后，便从缓存中取数据，再返回，且以 data 事件输出
+*/
 /*
 结果：
 data 1
