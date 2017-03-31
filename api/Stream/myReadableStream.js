@@ -14,6 +14,7 @@ myStream.prototype._read = function() {
         this.push(d);//默认只可以push string buffer 数据
 };
 var m = new myStream();
+//调用data,会进入流动模式
 m.on('data', function(chunk) {
     console.log('data', String(chunk));
 });
