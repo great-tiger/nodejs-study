@@ -9,9 +9,9 @@ var data = ["1", "2", "3"];
 myStream.prototype._read = function() {
     var d = data.splice(0, 1)[0];
     if (data.length == 0)
-        this.push(null);
+        this.push(null);//数据读取完成，直接push null 就可以了。null 时有特殊含义的。
     else
-        this.push(d);
+        this.push(d);//默认只可以push string buffer 数据
 };
 var m = new myStream();
 m.on('data', function(chunk) {
