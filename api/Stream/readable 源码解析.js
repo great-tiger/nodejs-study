@@ -3,13 +3,14 @@
 read(n) 从内存中读取数据
 pause() 进入暂停模式 触发pause事件
 resume() 进入流动模式
+push() 向缓冲区中写数据，也有可能没有写入到缓冲区中，就直接被消费了。push(null)由特殊含义，通知readable对象，数据已经从源读取完啦。
 
 事件：
 pause 进入暂停模式时触发
 readable 缓冲区中有数据可读了，触发readable事件。由read(0) 在特定条件下触发。
-data
-error
-end 数据读取完成
+data 当有数据可读时触发
+error 在接收和写入过程中发生错误时触发
+end 数据已经被消费完，即没有更多的数据可读时触发
 */
 
 'use strict';
@@ -119,6 +120,7 @@ function ReadableState(options, stream) {
   this.pipesCount = 0;
   //工作模式 false 暂停模式 true 流动模式 null 初始化值
   this.flowing = null;
+  //表示数据已经从源读取完成,即已被push(null)通知。此时缓冲区中可能还有数据没有被消费，所以只有缓冲区中也没有了数据并且ended==true才能触发end事件。
   this.ended = false;
   //表示是否已经触发end事件
   this.endEmitted = false;
