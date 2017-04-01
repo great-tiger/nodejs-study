@@ -1,3 +1,17 @@
+/*
+对外暴露的接口及事件
+read(n) 从内存中读取数据
+pause() 进入暂停模式 触发pause事件
+
+
+事件：
+pause 进入暂停模式时触发
+readable
+data
+error
+end 数据读取完成
+*/
+
 'use strict';
 
 module.exports = Readable;
@@ -97,12 +111,16 @@ function ReadableState(options, stream) {
   // A linked list is used to store data chunks instead of an array because the
   // linked list can remove elements from the beginning faster than
   // array.shift()
+  //真正用来在内存中存数据的缓冲区
   this.buffer = new BufferList();
+  //缓冲区数据的长度
   this.length = 0;
   this.pipes = null;
   this.pipesCount = 0;
+  //工作模式 false 暂停模式 true 流动模式 null 初始化值
   this.flowing = null;
   this.ended = false;
+  //表示是否已经触发end事件
   this.endEmitted = false;
   this.reading = false;
 
@@ -114,6 +132,7 @@ function ReadableState(options, stream) {
 
   // whenever we return null, then we set a flag to say
   // that we're awaiting a 'readable' event emission.
+  // 表示是不是需要一个事件
   this.needReadable = false;
   this.emittedReadable = false;
   this.readableListening = false;
@@ -182,6 +201,7 @@ Readable.prototype.unshift = function (chunk) {
   return readableAddChunk(this, state, chunk, '', true);
 };
 
+//是否处在暂停模式
 Readable.prototype.isPaused = function () {
   return this._readableState.flowing === false;
 };
@@ -295,6 +315,7 @@ function howMuchToRead(n, state) {
 // you can override either this method, or the async _read(n) below.
 // read(n) 返回读到的数据，同时通过触发data事件，向外传递数据的。
 // read(n) 的返回值为null，表示没有读到数据。
+// read(0) 与 read() 的区别主要体现在上面的那个函数howMuchToRead中，read() 读取缓冲区所有的数据,read(0) 表示读取0条数。read(n) 表示读取n条数据。
 Readable.prototype.read = function (n) {
   debug('read', n);
   n = parseInt(n, 10);
@@ -307,7 +328,7 @@ Readable.prototype.read = function (n) {
   // already have a bunch of data in the buffer, then just trigger
   // the 'readable' event and move on.
   /*
-  如果我们调用read(0)来触发一个可读的事件，但我们已经有一堆数据在缓冲区，然后只触发'可读'事件。
+  如果我们调用read(0)来触发一个可读的事件，但我们已经有一堆数据在缓冲区，然后只触发readable事件。
   */
   if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
     debug('read: emitReadable', state.length, state.ended);
@@ -729,6 +750,11 @@ function resume_(stream, state) {
   if (state.flowing && !state.reading) stream.read(0);
 }
 
+//如果当前流不是暂停模式，则进入暂停模式
+//this._readableState.flowing
+//false 暂停模式
+//true 流动模式
+//null 初始状态
 Readable.prototype.pause = function () {
   debug('call pause flowing=%j', this._readableState.flowing);
   if (false !== this._readableState.flowing) {
