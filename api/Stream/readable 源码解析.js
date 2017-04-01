@@ -2,11 +2,11 @@
 对外暴露的接口及事件
 read(n) 从内存中读取数据
 pause() 进入暂停模式 触发pause事件
-
+resume() 进入流动模式
 
 事件：
 pause 进入暂停模式时触发
-readable
+readable 缓冲区中有数据可读了，触发readable事件。由read(0) 在特定条件下触发。
 data
 error
 end 数据读取完成
@@ -233,6 +233,7 @@ function readableAddChunk(stream, state, chunk, encoding, addToFront) {
       // we're not in object mode
       if (!skipAdd) {
         // if we want the data now, just emit it.
+        // 流动模式下，并且时异步调用push,直接触发data事件
         if (state.flowing && state.length === 0 && !state.sync) {
           stream.emit('data', chunk);
           stream.read(0);
@@ -393,6 +394,8 @@ Readable.prototype.read = function (n) {
     state.sync = false;
     // If _read pushed data synchronously, then `reading` will be false,
     // and we need to re-evaluate how much data we can return to the user.
+    // 如果同步push数据到Buffer，此时reading为false,需要重新计算需要获取的数据量
+    // 比如我们通过 read() 读取数据，此处应该返回缓冲区中数据个数
     if (!state.reading) n = howMuchToRead(nOrig, state);
   }
 
@@ -412,6 +415,7 @@ Readable.prototype.read = function (n) {
     if (!state.ended) state.needReadable = true;
 
     // If we tried to read() past the EOF, then emit end on the next tick.
+    // 结束啦，触发end事件
     if (nOrig !== n && state.ended) endReadable(this);
   }
 

@@ -6,7 +6,7 @@ var myStream = function(opt) {
 };
 inherits(myStream, readable.Readable);
 var data = ["1", "2", "3"];
-myStream.prototype._read = function() {
+myStream.prototype._read = function(n) {//n表示可以读入的数据量，最好一次给够。
     var d = data.splice(0, 1)[0];
     if (data.length == 0)
         this.push(null);//数据读取完成，直接push null 就可以了。null 时有特殊含义的。
