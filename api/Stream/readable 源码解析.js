@@ -4,6 +4,8 @@ read(n) 从内存中读取数据
 pause() 进入暂停模式 触发pause事件
 resume() 进入流动模式
 push() 向缓冲区中写数据，也有可能没有写入到缓冲区中，就直接被消费了。push(null)由特殊含义，通知readable对象，数据已经从源读取完啦。
+	   push 的数据可以是 null String Buffer 但是 on('data',function(chunk)) chunk 是 Buffer
+       对象模式下 push(obj) chunk 也是 obj
 
 事件：
 pause 进入暂停模式时触发
